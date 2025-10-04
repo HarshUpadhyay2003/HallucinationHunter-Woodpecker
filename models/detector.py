@@ -92,7 +92,9 @@ class Detector:
     '''
     def __init__(self, args):
         
-        self.model = load_model(args.detector_config, args.detector_model_path, device='cuda:0')
+        # Use device from args, fallback to 'cuda:0' if not specified (for backward compatibility)
+        device = getattr(args, 'device', 'cuda:0')
+        self.model = load_model(args.detector_config, args.detector_model_path, device=device)
         self.cache_dir = args.cache_dir
         self.args = args
         self.nlp = spacy.load("en_core_web_md")
@@ -122,7 +124,7 @@ class Detector:
                 caption=entity_str,
                 box_threshold=sample['box_threshold'] if 'box_threshold' in sample else BOX_TRESHOLD,
                 text_threshold=TEXT_TRESHOLD,
-                device='cuda:0'
+                device=getattr(self.args, 'device', 'cuda:0')  # Use device from args
             )
             phrases = find_most_similar_strings(self.nlp, phrases, entity_list)    
             global_entity_dict = extract_detection(global_entity_dict, boxes, phrases, image_source, self.cache_dir, sample)
