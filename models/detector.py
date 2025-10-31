@@ -9,6 +9,8 @@ import shortuuid
 from torchvision.ops import box_convert
 import torch
 from models.utils import compute_iou
+import sys, os
+sys.path.append(os.path.abspath("/workspace/proj1/HallucinationHunter-Woodpecker/models/GroundingDINO"))
 from groundingdino.util.inference import load_model, load_image, predict
 from PIL import Image
 import spacy

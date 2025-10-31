@@ -87,3 +87,9 @@ hcs_test_results.json
 *.pt
 *.bin
 *.safetensors
+# Additional project-specific ignores
+datasets/
+models/
+results/
+assets/
+examples/
