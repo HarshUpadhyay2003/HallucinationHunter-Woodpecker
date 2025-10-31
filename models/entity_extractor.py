@@ -39,29 +39,14 @@ Sentence:
 
 Output:'''
 
-def get_res(sent: str, max_tokens: int=1024):
-    content = PROMPT_TEMPLATE.format(sentence=sent)
-    while True:
-        try:
-            response = openai.ChatCompletion.create(
-                model='gpt-3.5-turbo',
-                messages=[{
-                    'role': 'system',
-                    'content': 'You are a language assistant that helps to extract information from given sentences.'
-                }, {
-                    'role': 'user',
-                    'content': content,
-                }],
-                temperature=0.2,
-                max_tokens=max_tokens,
-            )
-            break
-        except Exception as e:
-            print(e)
-        time.sleep(NUM_SECONDS_TO_SLEEP)
-
-    res = response['choices'][0]['message']['content']
-    return res
+def get_res(sent):
+    #Sprint("[⚙️ Offline Mode] Skipping OpenAI entity extraction.")
+    # Simple rule-based extraction using keywords
+    entities = []
+    for word in sent.split():
+        if word.istitle():  # crude heuristic for named entities
+            entities.append(word)
+    return ", ".join(entities) if entities else "none"
 
 class EntityExtractor:
     def __init__(self, args):

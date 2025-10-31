@@ -1,6 +1,5 @@
 from typing import  Dict
 import spacy
-import openai
 import time
 from tqdm import tqdm
 
@@ -30,30 +29,13 @@ Passage:
 
 Rewritten passage:'''
 
-def get_output(text: str, max_tokens: int=1024):
-    content = PROMPT_TEMPLATE.format(text=text)
-    while True:
-        try:
-            response = openai.ChatCompletion.create(
-                model='gpt-3.5-turbo',
-                messages=[{
-                    'role': 'system',
-                    'content': 'You are a language assistant that helps to rewrite a passage according to instructions.'
-                }, {
-                    'role': 'user',
-                    'content': content,
-                }],
-                temperature=0.2,  
-                max_tokens=max_tokens,
-            )
-            break
-        # except openai.error.RateLimitError:
-        #     pass
-        except Exception as e:
-            print(e)
-        time.sleep(NUM_SECONDS_TO_SLEEP)
-
-    return response['choices'][0]['message']['content']
+def get_output(text, max_tokens=512):
+    """
+    Offline version — skips OpenAI calls and uses BLIP-generated description directly.
+    """
+    #print("[⚙️ Offline Mode] Skipping OpenAI rewriting step.")
+    # Option 1: just return same text
+    return text.strip()
 
 
 class PreProcessor:
