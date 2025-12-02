@@ -12,3 +12,7 @@ tqdm
 transformers
 bitsandbytes
 accelerate
+pandas
+matplotlib
+seaborn
+scipy

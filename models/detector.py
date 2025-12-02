@@ -50,11 +50,27 @@ def extract_detection(global_entity_dict, boxes, phrases, image_source, cache_di
         if in_dict(global_entity_dict, norm_box):
            continue 
        
+        # Clip box coordinates to image boundaries to prevent "tile cannot extend outside image" error
+        x1, y1, x2, y2 = box
+        x1 = max(0, min(x1, w - 1))
+        y1 = max(0, min(y1, h - 1))
+        x2 = max(x1 + 1, min(x2, w))
+        y2 = max(y1 + 1, min(y2, h))
+        clipped_box = (x1, y1, x2, y2)
+        
+        # Skip if clipped box is invalid (no area)
+        if x2 <= x1 or y2 <= y1:
+            continue
+        
         # add instance, including the cropped_pic & its original bbox
-        crop_id = shortuuid.uuid()
-        crop_img = Image.fromarray(image_source).crop(box)
-        crop_path = os.path.join(cache_dir, f"{crop_id}.png")
-        crop_img.save(crop_path)
+        try:
+            crop_id = shortuuid.uuid()
+            crop_img = Image.fromarray(image_source).crop(clipped_box)
+            crop_path = os.path.join(cache_dir, f"{crop_id}.png")
+            crop_img.save(crop_path)
+        except Exception as e:
+            # Skip this detection if cropping fails
+            continue
         
         global_entity_dict[entity]['total_count'] += 1
         global_entity_dict[entity]['crop_path'].append(crop_path)

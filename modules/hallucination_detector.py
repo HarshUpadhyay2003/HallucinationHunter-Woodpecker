@@ -11,6 +11,10 @@ from typing import Dict, List, Tuple
 import re
 from collections import defaultdict
 
+# Global scorer instance to avoid reinitialization
+_global_scorer = None
+_global_scorer_device = None
+
 
 class HallucinationConfidenceScorer:
     """
@@ -21,15 +25,17 @@ class HallucinationConfidenceScorer:
     and consistency with visual evidence.
     """
     
-    def __init__(self, device: str = "cpu"):
+    def __init__(self, device: str = "cpu", silent: bool = False):
         """
         Initialize the HCS scorer.
         
         Args:
             device: Device to run computations on ('cpu' or 'cuda')
+            silent: If True, suppress initialization message
         """
         self.device = device
-        print(f"HCS initialized on device: {device}")
+        if not silent:
+            print(f"🔹 Initializing global HCS models on device: {device}")
     
     def extract_entities_from_text(self, text: str) -> List[str]:
         """
@@ -201,12 +207,22 @@ def calculate_hcs_score(sample: Dict, device: str = "cpu") -> Dict:
     """
     Calculate HCS score for a sample.
     
+    Uses a global scorer instance to avoid reinitialization overhead.
+    
     Args:
         sample: Sample dictionary
         device: Device to run on
-        
+    
     Returns:
         Sample with HCS scores added
     """
-    scorer = HallucinationConfidenceScorer(device=device)
-    return scorer.score_sample(sample)
+    global _global_scorer, _global_scorer_device
+    
+    # Initialize global scorer only once
+    if _global_scorer is None or _global_scorer_device != device:
+        if _global_scorer is None:
+            print("✅ HCS models loaded globally.")
+        _global_scorer = HallucinationConfidenceScorer(device=device, silent=(_global_scorer is not None))
+        _global_scorer_device = device
+    
+    return _global_scorer.score_sample(sample)
